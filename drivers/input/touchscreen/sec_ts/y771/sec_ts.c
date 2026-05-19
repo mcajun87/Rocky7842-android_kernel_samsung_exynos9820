@@ -2453,6 +2453,17 @@ static int sec_ts_probe(struct i2c_client *client, const struct i2c_device_id *i
 	if (!ts->psy)
 		input_err(true, &ts->client->dev, "%s: Cannot find power supply\n", __func__);
 
+	/* Enable screen off UDFPS by default */
+	if (ts->plat_data->support_fod) {
+		u8 data[3] = { 0 };
+
+		ts->lowpower_mode |= SEC_TS_MODE_SPONGE_PRESS;
+		data[2] = ts->lowpower_mode;
+		ret = ts->sec_ts_write_sponge(ts, data, 3);
+		if (ret < 0)
+			input_err(true, &ts->client->dev, "%s: Failed to write sponge\n", __func__);
+	}
+
 	ts->probe_done = true;
 
 	input_err(true, &ts->client->dev, "%s: done\n", __func__);
